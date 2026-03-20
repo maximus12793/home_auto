@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Request Intake</title>
+    <link href="/static/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Onyx Property Management</h1>
+            <p>Submit a new maintenance request</p>
+        </header>
+        
+        <form id="intake-form">
+            <div class="form-group">
+                <label for="display_name">Your Name</label>
+                <input type="text" id="display_name" required placeholder="Jane Doe">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="jane@example.com">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" placeholder="(555) 123-4567">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="property_id">Property ID</label>
+                    <input type="text" id="property_id" required placeholder="PROP-123">
+                </div>
+                <div class="form-group">
+                    <label for="unit_id">Unit ID</label>
+                    <input type="text" id="unit_id" required placeholder="Apt 4B">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="issue_type">Issue Type</label>
+                <select id="issue_type" required>
+                    <option value="" disabled selected>Select an issue type</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="hvac">HVAC / Heating / Cooling</option>
+                    <option value="appliance">Appliance</option>
+                    <option value="handyman">General / Handyman</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Detailed Description</label>
+                <textarea id="description" rows="4" required placeholder="Please describe the issue in detail..."></textarea>
+            </div>
+
+            <button type="submit" id="submit-btn">Submit Request</button>
+        </form>
+
+        <div id="success-message" class="hidden">
+            <div class="success-icon">✓</div>
+            <h2>Request Submitted!</h2>
+            <p>Your maintenance request has been successfully routed to our team.</p>
+            <button onclick="window.location.reload()">Submit Another</button>
+        </div>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

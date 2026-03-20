@@ -22,15 +22,25 @@ def get_orch() -> Orchestrator:
     return _orch
 
 
+from maintenance_orchestrator.store.database import DatabaseRequestStore, DatabaseAuditLog
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _orch
-    _orch = Orchestrator()
+    _orch = Orchestrator(
+        store=DatabaseRequestStore(),
+        audit=DatabaseAuditLog()
+    )
     yield
 
 
+import os
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI(title="Maintenance orchestrator", version="0.1.0", lifespan=lifespan)
 
+static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+app.mount("/static", StaticFiles(directory=static_dir, html=True), name="static")
 
 class TransitionBody(BaseModel):
     new_state: OrchestratorState
@@ -41,6 +51,38 @@ class TenantCoordinationBody(BaseModel):
     reason: AwaitingTenantReason | None = None
     blocked_by: BlockedBy = BlockedBy.none
     next_action: str | None = None
+
+from maintenance_orchestrator.models.domain import QuoteRecord
+
+class QuoteSubmitBody(BaseModel):
+    vendor_id: str
+    amount_cents: int | None = None
+    notes: str | None = None
+    status: str = "pending"
+
+from maintenance_orchestrator.analytics.service import AnalyticsService, VendorScorecard
+
+@app.get("/analytics/scorecards", response_model=list[VendorScorecard])
+def get_scorecards():
+    svc = AnalyticsService(get_orch().store, get_orch().quotes.store)
+    return svc.get_vendor_scorecards()
+
+@app.get("/requests/{correlation_id}/quotes", response_model=list[QuoteRecord])
+def get_quotes(correlation_id: str) -> list[QuoteRecord]:
+    return get_orch().quotes.list_quotes(correlation_id)
+
+@app.post("/requests/{correlation_id}/quotes", response_model=QuoteRecord)
+def submit_quote(correlation_id: str, body: QuoteSubmitBody) -> QuoteRecord:
+    try:
+        return get_orch().quotes.add_quote(
+            correlation_id,
+            vendor_id=body.vendor_id,
+            amount_cents=body.amount_cents,
+            notes=body.notes,
+            status=body.status,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Not found")
 
 
 @app.post("/requests", response_model=MaintenanceRequest)

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Portal - Onyx</title>
+    <link href="/static/vendor.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vendor Portal</h1>
+            <p>Submit your estimate or ETA</p>
+        </header>
+        
+        <form id="quote-form">
+            <div class="form-group">
+                <label for="vendor_id">Vendor ID</label>
+                <input type="text" id="vendor_id" required placeholder="e.g. v-plumb-1">
+            </div>
+            
+            <div class="form-group">
+                <label for="correlation_id">Request ID</label>
+                <input type="text" id="correlation_id" required placeholder="REQ-12345">
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Estimated Cost (USD)</label>
+                <input type="number" step="0.01" id="amount" required placeholder="e.g. 150.00">
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes & ETA</label>
+                <textarea id="notes" rows="3" placeholder="I can be there by Tuesday at 2 PM..."></textarea>
+            </div>
+
+            <button type="submit" id="submit-btn">Submit Quote</button>
+        </form>
+
+        <div id="success-message" class="hidden">
+            <div class="success-icon">✓</div>
+            <h2>Quote Submitted!</h2>
+            <p>Your estimate has been routed to the property manager.</p>
+            <button onclick="window.location.reload()">Back to Portal</button>
+        </div>
+    </div>
+    <script src="/static/vendor.js"></script>
+</body>
+</html>

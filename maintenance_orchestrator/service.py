@@ -16,6 +16,8 @@ from maintenance_orchestrator.state.lifecycle import apply_blocked_flags_for_sta
 from maintenance_orchestrator.store.memory import RequestStore
 from maintenance_orchestrator.triage.service import TriageService
 from maintenance_orchestrator.vendors.directory import VendorDirectory
+from maintenance_orchestrator.connectors.email import EmailConnector
+from maintenance_orchestrator.connectors.sms import SmsConnector
 
 
 class Orchestrator:
@@ -37,11 +39,26 @@ class Orchestrator:
         self.router = RouterService(self.vendors)
         self.quotes = QuoteService()
         self.cmms = cmms or NoOpCmmsConnector()
+        self.email = EmailConnector()
+        self.sms = SmsConnector()
 
     def ingest(self, payload: IntakePayload) -> MaintenanceRequest:
         req = self.intake.create_request(payload)
         self.store.put(req)
         self._log(req.correlation_id, "system", "request_created", {"channel": req.channel.value})
+        
+        if req.tenant.email:
+            self.email.send(
+                req.tenant.email, 
+                f"Maintenance Request Received: {req.correlation_id}", 
+                f"Thank you for submitting your {req.issue_type} request. Our team will review it shortly."
+            )
+        if req.tenant.phone:
+            self.sms.send(
+                req.tenant.phone, 
+                f"Your Onyx property request {req.correlation_id} has been received."
+            )
+            
         return req
 
     def get(self, correlation_id: str) -> MaintenanceRequest | None:

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Scorecards - Onyx</title>
+    <link href="/static/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .scorecard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .card {
+            background: rgba(1, 4, 9, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+        .card h3 {
+            margin: 0 0 1rem 0;
+            color: #fff;
+            font-size: 1.25rem;
+        }
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .stat-label {
+            color: var(--text-muted);
+        }
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .container {
+            max-width: 900px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vendor Scorecards</h1>
+            <p>Analytics on contractor quotes and average costs</p>
+        </header>
+        
+        <div id="loading" style="text-align:center; color: var(--text-muted);">Loading scorecards...</div>
+        <div class="scorecard-grid" id="grid"></div>
+
+    </div>
+    <script>
+        async function loadScorecards() {
+            try {
+                const response = await fetch('/analytics/scorecards');
+                const data = await response.json();
+                
+                const grid = document.getElementById('grid');
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center; color: var(--text-muted); width: 100%;">No quotes recorded yet.</p>';
+                    return;
+                }
+                
+                data.forEach(vendor => {
+                    const avgStr = vendor.average_quote_usd ? `$${vendor.average_quote_usd.toFixed(2)}` : 'N/A';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>${vendor.vendor_id}</h3>
+                        <div class="stat">
+                            <span class="stat-label">Quotes Submitted</span>
+                            <span class="stat-value">${vendor.total_quotes_submitted}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Average Estimate</span>
+                            <span class="stat-value" style="color: var(--success)">${avgStr}</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                document.getElementById('loading').innerText = 'Error loading analytics.';
+            }
+        }
+        
+        loadScorecards();
+    </script>
+</body>
+</html>
